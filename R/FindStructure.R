@@ -1,5 +1,6 @@
 #' @importFrom igraph components
 #' @importFrom igraph groups
+#' @importFrom igraph graph_from_adjacency_matrix
 #' @title Find the structure of the graph from the adjacency matrix
 #'
 #' @description This internal function of the spectral clustering algorithm finds the structure of the graph to cluster (number of nodes and connected components).

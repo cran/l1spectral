@@ -112,12 +112,14 @@ PenOpt <- function(U, n, elements, iteration, pen, k){
         for (t in (1:length(T))){
           sol2 <- sol
           sol2[which(sol<T[t])] <- 0
-          if (length(which(sol>0))>1){
-            solution <- glmnet(W[which(groups$which!=g),which(sol>0)],-w[which(groups$which!=g)],lambda=0)
+          if (length(which(sol2>0))>1){
+            solution <- glmnet(W[which(groups$which!=g),which(sol2>0)],-w[which(groups$which!=g)],lambda=0)
             solution <- solution$beta
-          } else {
-            solution <- lm(-w[which(groups$which!=g)]~W[which(groups$which!=g),which(sol>0)]-1)
+          } else if (length(which(sol2>0))==1){
+            solution <- lm(-w[which(groups$which!=g)]~W[which(groups$which!=g),which(sol2>0)]-1)
             solution <- solution$coefficients
+          } else {
+            solution <- 0
           }
           sol2[which(sol2>0)] <- solution
 

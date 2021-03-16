@@ -6,20 +6,20 @@
 
 using namespace Rcpp;
 
-// grahm_schimdtCpp
-List grahm_schimdtCpp(arma::mat A);
-RcppExport SEXP _l1spectral_grahm_schimdtCpp(SEXP ASEXP) {
+// grahm_schmidtCpp
+List grahm_schmidtCpp(arma::mat A);
+RcppExport SEXP _l1spectral_grahm_schmidtCpp(SEXP ASEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< arma::mat >::type A(ASEXP);
-    rcpp_result_gen = Rcpp::wrap(grahm_schimdtCpp(A));
+    rcpp_result_gen = Rcpp::wrap(grahm_schmidtCpp(A));
     return rcpp_result_gen;
 END_RCPP
 }
 
 static const R_CallMethodDef CallEntries[] = {
-    {"_l1spectral_grahm_schimdtCpp", (DL_FUNC) &_l1spectral_grahm_schimdtCpp, 1},
+    {"_l1spectral_grahm_schmidtCpp", (DL_FUNC) &_l1spectral_grahm_schmidtCpp, 1},
     {NULL, NULL, 0}
 };
 

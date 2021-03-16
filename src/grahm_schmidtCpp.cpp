@@ -4,7 +4,7 @@
 using namespace Rcpp;
 
 //[[Rcpp::export]]
-List grahm_schimdtCpp(arma::mat A) {
+List grahm_schmidtCpp(arma::mat A) {
   int n = A.n_cols;
   int m = A.n_rows;
   arma::mat Q(m, n);

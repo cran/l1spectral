@@ -111,7 +111,7 @@ l1_spectral <- function(A, k, elements, pen, stab = TRUE){
             eigenvectors_tmp <- eigenvectors_tmp[,-(n-k+i-1)]
             eigenvectors_tmp <- cbind(v,eigenvectors_tmp)
 
-            eigenvectors_tmp <- grahm_schimdtCpp(eigenvectors_tmp)
+            eigenvectors_tmp <- grahm_schmidtCpp(eigenvectors_tmp)
             eigenvectors_tmp <- eigenvectors_tmp$Q
             eigenvectors_tmp <- cbind(eigenvectors_tmp[,2:(n-k+i-1)],eigenvectors_tmp[,1],eigenvectors_tmp[,(n-k+i):n])
           }
