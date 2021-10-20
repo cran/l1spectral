@@ -44,10 +44,7 @@ This function runs the l1-spectral clustering algorithm on one component only.
        # the elements of the first component
 
  # 3rd: perform the l1-spectral clustering algorithm
- # whithout stabilization
- comm <- l1_spectral(A = A_tmp, k = k, elements = Elements_tmp, pen = "lasso", stab=FALSE)
-
- # with stabilization (could take more time)
+ # (with stabilization, which is the most recommended setting)
  comm <- l1_spectral(A = A_tmp, k = k, elements = Elements_tmp, pen = "lasso", stab=TRUE)
 }
 \seealso{

@@ -1,5 +1,6 @@
 #' @importFrom glmnet cv.glmnet
 #' @importFrom glmnet glmnet
+#' @importFrom graphics abline
 #' @importFrom cvTools cvFolds
 #' @title Solve the internal minimization problem
 #'
@@ -45,7 +46,9 @@
 #'  i <- 1 # the cluster we aim at recovering
 #'  U <- t(eigenvectors[,1:(n-k+i-1)])
 #'  v <- PenOpt(U, n, elements = Elements_tmp, iteration = i, pen = "lasso", k) # for lasso
-#'  v <- PenOpt(U, n, elements = Elements_tmp, iteration = i, pen = "thresholdedLS", k)
+#'
+#'  # the same with the least-squared threshold
+#'  \donttest{v <- PenOpt(U, n, elements = Elements_tmp, iteration = i, pen = "thresholdedLS", k)}
 
 PenOpt <- function(U, n, elements, iteration, pen, k){
   # solve the l1-min problem using Lasso or thresholded least-squares penalization
@@ -95,49 +98,63 @@ PenOpt <- function(U, n, elements, iteration, pen, k){
     } else {
       # thresholded least-squares penalty
       # cross validation test
-      if (nrow(W)>=5){
-        K <- 5
-      } else {
-        K <- nrow(W)
-      }
-      groups <- cvFolds(nrow(W),K=K)
-      T <- seq(from=0, to=0.5,0.001)
-      erreur_cv <- c()
-      for (g in (1:K)){
-        Erreur <- c()
-        sol <- glmnet(W[which(groups$which!=g),],-w[which(groups$which!=g)],lambda=0)
-        sol <- sol$beta
-        sol <- as.matrix(sol)
+      if (nrow(W)>3){
+        if (nrow(W)>=5){
+          K <- 5
+        } else {
+          K <- nrow(W)
+        }
+        groups <- cvFolds(nrow(W),K=K)
+        T <- seq(from=0, to=0.5,0.001)
 
-        for (t in (1:length(T))){
+        FoldCV <- function(g,t){
+          Train <- which(groups$which!=g)
+          Test <- which(groups$which==g)
+          sol <- glmnet(W[Train,],-w[Train],lambda=0)
+          sol <- sol$beta
+          sol <- as.matrix(sol)
+
           sol2 <- sol
-          sol2[which(sol<T[t])] <- 0
+          sol2[which(sol<t)] <- 0
           if (length(which(sol2>0))>1){
-            solution <- glmnet(W[which(groups$which!=g),which(sol2>0)],-w[which(groups$which!=g)],lambda=0)
+            solution <- glmnet(W[Train,which(sol2>0)],-w[Train],lambda=0)
             solution <- solution$beta
           } else if (length(which(sol2>0))==1){
-            solution <- lm(-w[which(groups$which!=g)]~W[which(groups$which!=g),which(sol2>0)]-1)
+            solution <- lm(-w[Train]~W[Train,which(sol2>0)]-1)
             solution <- solution$coefficients
           } else {
             solution <- 0
           }
           sol2[which(sol2>0)] <- solution
 
-          erreur <- sum((-w[which(groups$which==g)]-W[which(groups$which==g),]%*%sol2)^2)
-          Erreur <- c(Erreur,erreur)
+          error <- sum((-w[Test]-W[Test,]%*%sol2)^2)
+          return(error)
         }
 
-        erreur_cv <- cbind(erreur_cv,Erreur)
-      }
-      Erreur_cv <- rowMeans(erreur_cv)
+        T_CV <- function(j){
+          t <- T[j]
+          error_CV <- lapply(X=1:K, FUN=FoldCV,t=t)
+          error_CV <- mean(do.call(rbind, error_CV)[,1])
+          return(error_CV)
+        }
 
-      plot(T,Erreur_cv,type="l")
-      lambda_opt <- T[which.min(Erreur_cv)]
-      sol2 <- glmnet(W,-w,lambda=0)
-      sol2 <- sol2$beta
-      sol2 <- as.matrix(sol2)
-      sol2[which(sol2<lambda_opt)] <- 0
-      solution <- sol2
+        Error_CV <- lapply(X=1:length(T),FUN=T_CV)
+        Error_CV <- do.call(rbind, Error_CV)[,1]
+
+        plot(T,Error_CV,type="l")
+        lambda_opt <- T[which.min(Error_CV)]
+        sol2 <- glmnet(W,-w,lambda=0)
+        sol2 <- sol2$beta
+        sol2 <- as.matrix(sol2)
+        sol2[which(sol2<lambda_opt)] <- 0
+        solution <- sol2
+      } else {
+        sol <- glmnet(W,-w,lambda=0)
+        sol <- sol$beta
+        sol <- as.matrix(sol)
+        sol[which(sol<0.5)] <- 0
+        solution <- sol
+      }
     }
     if(elements[iteration]==1){
       v <- c( 1 ,solution[elements[iteration]:length(solution)])

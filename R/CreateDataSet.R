@@ -68,6 +68,7 @@ CreateDataSet <- function(k, n, p, print.plot=TRUE, ClustersLength = NULL){
   if (is.null(ClustersLength)){
     ClustersLength <- c()
     Length_tmp <- Length
+
     for (i in (1:(k-1))){
       Length_tmp <- Length_tmp[Length_tmp<(n-sum(ClustersLength)+2*(i-k)+1)]
       if (length(Length_tmp)>0){
@@ -82,11 +83,11 @@ CreateDataSet <- function(k, n, p, print.plot=TRUE, ClustersLength = NULL){
     ClustersLength <- sort(ClustersLength)
   }
 
-  print(paste0(c("There are",k,"clusters of size ",ClustersLength,"."), collapse=" "))
+  print(paste0(c("There are",k,"clusters of size",ClustersLength,"."), collapse=" "))
 
   A <- matrix(1,ncol=ClustersLength[1],nrow=ClustersLength[1])
   for (i in 2:k){
-    A <- bdiag(A,matrix(1,ClustersLength[i],ClustersLength[i]));
+    A <- bdiag(A,matrix(1,ClustersLength[i],ClustersLength[i]))
   }
   A <- matrix(A,ncol(A),nrow(A))
 
@@ -118,11 +119,13 @@ CreateDataSet <- function(k, n, p, print.plot=TRUE, ClustersLength = NULL){
 
   print(paste0("On the ",length(which(A==1))/2," existing edges, ",edges_inside," were removed and ",edges_outside," were added."))
 
-  par(mfrow=c(1,2))
-  graph_hat <- graph_from_adjacency_matrix(A_perturbed,mode="undirected")
-  graph <- graph_from_adjacency_matrix(A,mode="undirected")
-  plot(graph,main="Real graph")
-  plot(graph_hat,main="Perturbed graph")
+  if (print.plot==TRUE){
+    par(mfrow=c(1,2))
+    graph_hat <- graph_from_adjacency_matrix(A_perturbed,mode="undirected")
+    graph <- graph_from_adjacency_matrix(A,mode="undirected")
+    plot(graph,main="Real graph")
+    plot(graph_hat,main="Perturbed graph")
+  }
 
   data <- list(A=A, A_hat = A_perturbed, ClustersLength=ClustersLength)
 }

@@ -30,13 +30,13 @@
 #'
 #'  data(ToyData)
 #'
-#'  # unstabilized version (for stabilized version, turn stab to TRUE)
-#'  \donttest{results <- l1_spectralclustering(A = ToyData$A_hat, pen = "thresholdedLS", stab=FALSE)}
-#'
-#'  # when desired, the number of clusters and representative elements can be provided
-#'  results2 <- l1_spectralclustering(A = ToyData$A_hat, pen = "thresholdedLS",
-#'              k=2, elements = c(1,4))
+#'  # if desired, the number of clusters and representative elements can be provided, otherwise, remove
+#'  results2 <- l1_spectralclustering(A = ToyData$A_hat, pen = "lasso")
 #'  results2$comm
+#'
+#'  # when desired, the number of clusters and representative elements can also be provided
+#'  \donttest{results2 <- l1_spectralclustering(A = ToyData$A_hat, pen = "lasso",
+#'              k=2, elements = c(1,4))}
 
 l1_spectralclustering <- function(A, k = NULL, elements = NULL, pen, stab = TRUE){
   # A: the matrix we aim at clustering (adjacency matrix, e.g. from CreateDataSet())
@@ -73,6 +73,8 @@ l1_spectralclustering <- function(A, k = NULL, elements = NULL, pen, stab = TRUE
     Elements_tmp <- list(score = score_tmp,indices = indices_tmp)
 
     results <- l1_spectral(A = Atmp, k = clusters_tmp, elements = Elements_tmp, pen = pen, stab=stab)
+
+    print(paste0("Component ",i," clustered."))
 
     if (!is.null(ncol(results))){
       if (ncol(results)!=clusters$nbr_clusters[[i]]){

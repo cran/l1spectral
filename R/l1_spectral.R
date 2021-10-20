@@ -33,10 +33,7 @@
 #'        # the elements of the first component
 #'
 #'  # 3rd: perform the l1-spectral clustering algorithm
-#'  # whithout stabilization
-#'  comm <- l1_spectral(A = A_tmp, k = k, elements = Elements_tmp, pen = "lasso", stab=FALSE)
-#'
-#'  # with stabilization (could take more time)
+#'  # (with stabilization, which is the most recommended setting)
 #'  comm <- l1_spectral(A = A_tmp, k = k, elements = Elements_tmp, pen = "lasso", stab=TRUE)
 
 l1_spectral <- function(A, k, elements, pen, stab = TRUE){
@@ -76,13 +73,15 @@ l1_spectral <- function(A, k, elements, pen, stab = TRUE){
           algo <- "continue"
           break
         } else if (length(I)<k){
-          print("One cluster disappears.")
+          elements$indices <- elements$indices[-which(elements$indices %in% as.numeric(substring(DoubleNodes, 5)))]
+          elements$score <- elements$score[-which(names(elements$score) %in% DoubleNodes)]
+          indices <- elements$indices
+          print(paste0(k-length(indices)," clusters disappear."))
           DoubleNodes <- c()
           comm <- c()
-          k <- k-1
-          indices <- elements$indices[2:(k+1)]
+          k <- length(indices)
         } else {
-          I <- names(sort(I[1:k]))
+          I <- names(rev(I[1:k]))
           indices <- as.numeric(substring(I, 5))
         }
       }
@@ -119,11 +118,10 @@ l1_spectral <- function(A, k, elements, pen, stab = TRUE){
           # 5th step: solve the lasso
           U <- t(eigenvectors_tmp[,1:(n-k+i-1)])
           v <- PenOpt(U, n, elements = indices, iteration = i, pen=pen, k)
-          print(paste0("Iteration ",i," done."))
+          print(paste0("Cluster ",i," done."))
 
           # 6th step: save the community index
           comm <- cbind(comm,v)
-
           I <- which(rowSums(comm>0)>1)
           if (length(I)>0){
             for (j in (1:length(I))){
@@ -132,12 +130,13 @@ l1_spectral <- function(A, k, elements, pen, stab = TRUE){
               comm[I[j],] <- C
             }
           }
+
           if (stab==TRUE){
             if (i==k){
               # check the indices for the last time
-              if (length(which(v[indices[-i]]>0))>0){
+              if (length(which(comm[indices[-i],i]>0))>0){
                 print("Find other community indices.")
-                doubleNodes <- paste0("Node",indices[-i][which(v[indices[-i]]>0)])
+                doubleNodes <- paste0("Node",indices[-i][which(comm[indices[-i],i]>0)])
                 DoubleNodes <- c(DoubleNodes,doubleNodes)
                 algo <- "stop"
                 break

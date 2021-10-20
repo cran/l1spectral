@@ -53,7 +53,9 @@ This internal function of the l1-spectral clustering algorithm solves the l1-min
  i <- 1 # the cluster we aim at recovering
  U <- t(eigenvectors[,1:(n-k+i-1)])
  v <- PenOpt(U, n, elements = Elements_tmp, iteration = i, pen = "lasso", k) # for lasso
- v <- PenOpt(U, n, elements = Elements_tmp, iteration = i, pen = "thresholdedLS", k)
+
+ # the same with the least-squared threshold
+ \donttest{v <- PenOpt(U, n, elements = Elements_tmp, iteration = i, pen = "thresholdedLS", k)}
 }
 \seealso{
 \code{\link{l1_spectralclustering}}, \code{\link{l1_spectral}}, \code{\link{l1spectral}}.

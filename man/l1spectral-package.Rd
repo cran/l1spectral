@@ -29,11 +29,12 @@ C. Champion, M. Champion, M. Blazère, R. Burcelin, J.M. Loubes, l1-spectral clu
 
  data(ToyData)
 
- # unstabilized version (for stabilized version, turn stab to TRUE)
- \donttest{results <- l1_spectralclustering(A = ToyData$A_hat, pen = "thresholdedLS", stab=FALSE)}
-
- # when desired, the number of clusters and representative elements can be provided
- results2 <- l1_spectralclustering(A = ToyData$A_hat, pen = "thresholdedLS",
-              k=2, elements = c(1,4))
+ # if desired, the number of clusters and representative elements can be provided,
+ # otherwise remove
+ results2 <- l1_spectralclustering(A = ToyData$A_hat, pen = "lasso")
  results2$comm
-  }
+
+ # when desired, the number of clusters and representative elements can also be provided
+ \donttest{results2 <- l1_spectralclustering(A = ToyData$A_hat, pen = "lasso",
+              k=2, elements = c(1,4))}
+}

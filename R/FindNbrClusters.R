@@ -1,6 +1,6 @@
-#' @importFrom graphics points
-#' @importFrom graphics legend
-#' @importFrom graphics abline
+#' @import ggplot2
+#' @importFrom dplyr filter
+#' @importFrom dplyr %>%
 #' @title Find the optimal number of clusters
 #'
 #' @description This internal function of the l1-spectral algorithm finds the optimal number of clusters to build.
@@ -69,10 +69,9 @@ FindNbrClusters <- function(A, structure, k = NULL){
     if (length(eigenvalue)==1){
       nbr_cluster <- 1
     } else {
-      gap <- c()
-      for (i in (2:length(eigenvalue))){
-        gap <- c(gap,eigenvalue[i]-eigenvalue[i-1])
-      }
+      gap <- sapply(2:length(eigenvalue),function(i){
+        eigenvalue[i]-eigenvalue[i-1]
+      })
       gap_ecart <- c(gap,0)-c(0,gap)
       nbr_cluster <- which(gap_ecart[2:length(gap_ecart)]>0.20)[1]+1
       if (is.na(nbr_cluster)){
@@ -88,22 +87,26 @@ FindNbrClusters <- function(A, structure, k = NULL){
 
     eigenvalues <- lapply(X = c(structure$groups,list(all=c(1:ncol(A)))),FUN = Eigen_list)
 
-    par(mfrow=c(1,1))
-    plot(eigenvalues$all,main="Eigenvalues of the Laplacian matrix",ylab="Eigenvalues",xlab="",type="b")
-
-    if (nbr_group>1){
-      for (i in (1:nbr_group)){
-        points(eigenvalues[[i]],col=rainbow(nbr_group)[i],type="b")
-      }
-      legend("bottomright",legend = c("All nodes",paste0("Connected component ",c(1:nbr_group))),col=c("black",rainbow(nbr_group)[1:nbr_group]),lty=1)
-    }
+    Length <- sapply(eigenvalues,function(l){length(l)})
+    Length2 <- unlist(lapply(eigenvalues,function(l){1:length(l)}))
+    x=NULL
+    compNr=NULL
+    data <- data.frame(eigen=unlist(eigenvalues),x=Length2,compNr=rep(c(paste0("Component ",1:nbr_group),"All"),Length))
 
     gaps <- lapply(X = eigenvalues[-length(eigenvalues)],FUN = Gap)
-    par(xpd=FALSE)
-    for (i in (1:length(gaps))){
-      color <- c(rainbow(nbr_group),"black")
-      abline(v=gaps[[i]],col=color[i],ylim=c(0,10),lty=3)
+
+    if (nbr_group>1){
+      p <- ggplot(data,aes(x=x,y=eigen,color=compNr))+geom_line()+geom_point()+
+        theme_bw() + labs(y="Eigenvalues",x="",colour = "Component number")+ scale_color_manual(values=rainbow(nbr_group+1))
+      p <- p + geom_vline(xintercept = unlist(gaps),linetype="dotted",color=rainbow(nbr_group+1)[-1])
+    } else {
+      data_small <- data %>% filter(compNr!="All")
+      p <- ggplot(data_small,aes(x=x,y=eigen,color=compNr))+geom_line()+geom_point()+
+        theme_bw() + labs(y="Eigenvalues",x="",colour = "Component number")+ scale_color_manual(values=rainbow(nbr_group))
+      p <- p + geom_vline(xintercept = unlist(gaps),linetype="dotted",color=rainbow(nbr_group))
     }
+
+    print(p)
 
     if (length(gaps)==1){
       nbr_clusters_total <- gaps[[1]]
@@ -144,19 +147,18 @@ FindNbrClusters <- function(A, structure, k = NULL){
     } else {
 
       eigenvalues <- lapply(X = c(structure$groups,list(all=c(1:ncol(A)))),FUN = Eigen_list)
-      par(mfrow=c(1,1))
-      plot(eigenvalues$all,main="Eigenvalues of the Laplacian matrix",ylab="Eigenvalues",xlab="",type="b")
-      for (i in (1:nbr_group)){
-        points(eigenvalues[[i]],col=rainbow(nbr_group)[i],type="b")
-      }
-      legend("bottomright",legend = c("All nodes",paste0("Connected component ",c(1:nbr_group))),col=c("black",rainbow(nbr_group)[1:nbr_group]),lty=1)
+
+      Length <- sapply(eigenvalues,function(l){length(l)})
+      Length2 <- unlist(sapply(eigenvalues,function(l){1:length(l)}))
+      data <- data.frame(eigen=unlist(eigenvalues),x=Length2,compNr=rep(c(paste0("Component ",1:nbr_group),"All"),Length))
+
+      p <- ggplot(data,aes(x=Length2,y=eigen,color=compNr))+geom_line()+geom_point()+
+        theme_bw() + labs(y="Eigenvalues",x="",colour = "Component number")+ scale_color_manual(values=rainbow(nbr_group+1))
 
       gaps <- lapply(X = eigenvalues[-length(eigenvalues)],FUN = Gap)
-      par(xpd=FALSE)
-      for (i in (1:length(gaps))){
-        color <- c(rainbow(nbr_group),"black")
-        abline(v=gaps[[i]],col=color[i],ylim=c(0,10),lty=3)
-      }
+
+      p <- p + geom_vline(xintercept = unlist(gaps),linetype="dotted",color=rainbow(nbr_group+1)[-1])
+      print(p)
 
       if (sum(unlist(gaps)[1:(length(gaps))]) != k){
         # there is a problem

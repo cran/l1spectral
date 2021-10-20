@@ -12,16 +12,22 @@ ComputePerformances(Results, A)
 \item{A}{The adjacency matrix of the graph to cluster.}
 }
 \value{
-The Normalized Mutualized Information (NMI) score.
+The Normalized Mutualized Information (NMI), Adjusted Mutualized Information (AMI) and Adjusted Rand Index (ARI) scores.
 }
 \description{
 This function computes the performances of the l1-spectral clustering algorithm in terms of Normalized Mutualized Information (NMI).
 }
 \examples{
  #############################################################
- # Generating toy data
+ # Computing the performances
  #############################################################
- Data <- CreateDataSet(k=3, n=20, p=list(p_inside=0.1,p_outside=0.1))
+
+ data(ToyData)
+
+ results <- l1_spectralclustering(A = ToyData$A_hat, pen = "lasso",
+             k=2, elements = c(1,4))
+
+ ComputePerformances(Results=results,A=ToyData$A)
 
 }
 \seealso{

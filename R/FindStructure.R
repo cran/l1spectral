@@ -43,7 +43,7 @@ FindStructure <- function(A){
 
   # find the connected components
   clu <- components(graph)
-  groups <- groups(clu)
+  groups <- igraph::groups(clu)
   if (length(groups)>1){
     groups <- groups[order(sapply(groups,length))]
   } else {
