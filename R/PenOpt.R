@@ -2,6 +2,7 @@
 #' @importFrom glmnet glmnet
 #' @importFrom graphics abline
 #' @importFrom cvTools cvFolds
+#' @importFrom caret RMSE
 #' @title Solve the internal minimization problem
 #'
 #' @description This internal function of the l1-spectral clustering algorithm solves the l1-minimization problem and recover the community indicators of the clusters.
@@ -59,7 +60,7 @@ PenOpt <- function(U, n, elements, iteration, pen, k){
     print("There is only one node in this cluster.")
     # w is constant - no more nodes in the cluster
     v <- rep(0,n)
-    v[elements] <- 1
+    v[elements[iteration]] <- 1
   } else if (length(which(w!=0))==1){
     sol <- glmnet(W,-w,lambda=0,lower.limits=0)
     sol <- sol$beta
@@ -99,13 +100,17 @@ PenOpt <- function(U, n, elements, iteration, pen, k){
       # thresholded least-squares penalty
       # cross validation test
       if (nrow(W)>3){
-        if (nrow(W)>=5){
+        if (nrow(W)>=50){
           K <- 5
         } else {
           K <- nrow(W)
         }
         groups <- cvFolds(nrow(W),K=K)
-        T <- seq(from=0, to=0.5,0.001)
+
+        sol2 <- glmnet(W,-w,lambda=0)
+        sol2 <- sol2$beta
+
+        T <- seq(from=0, to=1,0.01)
 
         FoldCV <- function(g,t){
           Train <- which(groups$which!=g)
@@ -116,18 +121,12 @@ PenOpt <- function(U, n, elements, iteration, pen, k){
 
           sol2 <- sol
           sol2[which(sol<t)] <- 0
-          if (length(which(sol2>0))>1){
-            solution <- glmnet(W[Train,which(sol2>0)],-w[Train],lambda=0)
-            solution <- solution$beta
-          } else if (length(which(sol2>0))==1){
-            solution <- lm(-w[Train]~W[Train,which(sol2>0)]-1)
-            solution <- solution$coefficients
-          } else {
-            solution <- 0
-          }
-          sol2[which(sol2>0)] <- solution
 
-          error <- sum((-w[Test]-W[Test,]%*%sol2)^2)
+          if (mean(-w[Test])!=0){
+            error <- RMSE(W[Test,]%*%sol2,-w[Test])
+          } else {
+            error <- 1
+          }
           return(error)
         }
 
@@ -143,11 +142,18 @@ PenOpt <- function(U, n, elements, iteration, pen, k){
 
         plot(T,Error_CV,type="l")
         lambda_opt <- T[which.min(Error_CV)]
+
+        if (lambda_opt==1){
+          Diff <- diff(Error_CV)
+          I <- which.max(abs(Diff/Diff[1])<0.1) + 1
+          lambda_opt <- T[I]
+        }
         sol2 <- glmnet(W,-w,lambda=0)
         sol2 <- sol2$beta
         sol2 <- as.matrix(sol2)
         sol2[which(sol2<lambda_opt)] <- 0
         solution <- sol2
+
       } else {
         sol <- glmnet(W,-w,lambda=0)
         sol <- sol$beta

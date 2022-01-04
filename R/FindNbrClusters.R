@@ -73,9 +73,16 @@ FindNbrClusters <- function(A, structure, k = NULL){
         eigenvalue[i]-eigenvalue[i-1]
       })
       gap_ecart <- c(gap,0)-c(0,gap)
-      nbr_cluster <- which(gap_ecart[2:length(gap_ecart)]>0.20)[1]+1
+      #nbr_cluster <- which(gap_ecart[2:length(gap_ecart)]>0.20)[1]+1
+      #nbr_cluster <- which.max(gap_ecart[2:length(gap_ecart)])+1
+      nbr_cluster <- which.max(gap[1:length(gap)])
       if (is.na(nbr_cluster)){
         nbr_cluster=1
+      } else if (nbr_cluster==1){
+        # just check if the number of clusters should really be 1
+        if (gap[length(gap)] != 0 && length(gap)>1){
+          nbr_cluster <- which.max(gap[2:length(gap)])+1
+        }
       }
     }
     return(nbr_cluster)

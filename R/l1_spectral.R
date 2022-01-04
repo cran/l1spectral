@@ -121,6 +121,7 @@ l1_spectral <- function(A, k, elements, pen, stab = TRUE){
           print(paste0("Cluster ",i," done."))
 
           # 6th step: save the community index
+          #v[v!=0] <- 1
           comm <- cbind(comm,v)
           I <- which(rowSums(comm>0)>1)
           if (length(I)>0){
