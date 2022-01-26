@@ -4,7 +4,7 @@
 \alias{FindNbrClusters}
 \title{Find the optimal number of clusters}
 \usage{
-FindNbrClusters(A, structure, k = NULL)
+FindNbrClusters(A, structure, k = NULL, k_max = NULL)
 }
 \arguments{
 \item{A}{The adjacency matrix}
@@ -12,6 +12,8 @@ FindNbrClusters(A, structure, k = NULL)
 \item{structure}{Output of the function \code{FindStructure()}.}
 
 \item{k}{True number of clusters (not necessarily needed). If not provided, k is chosen by spectral eigengap.}
+
+\item{k_max}{Maximal number of clusters to form (not necessarily needed). If not provided, k_max is set to the number of nodes.}
 }
 \value{
 A list with the following elements:

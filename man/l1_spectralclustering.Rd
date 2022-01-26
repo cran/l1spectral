@@ -4,12 +4,21 @@
 \alias{l1_spectralclustering}
 \title{Run the l1-spectral clustering algorithm}
 \usage{
-l1_spectralclustering(A, k = NULL, elements = NULL, pen, stab = TRUE)
+l1_spectralclustering(
+  A,
+  k = NULL,
+  k_max = NULL,
+  elements = NULL,
+  pen,
+  stab = TRUE
+)
 }
 \arguments{
 \item{A}{The adjacency matrix of the graph to cluster.}
 
 \item{k}{True number of clusters (not necessarily needed). If not provided, k is chosen by spectral eigengap.}
+
+\item{k_max}{Maximal number of clusters to form (not necessarily needed). If not provided, k_max is set to the number of nodes.}
 
 \item{elements}{The representative elements of the clusters (not necessary needed). If not provided, index are chosen using the betweeness centrality score.}
 

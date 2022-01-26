@@ -8,6 +8,7 @@
 #'
 #' @param A The adjacency matrix of the graph to cluster.
 #' @param k True number of clusters (not necessarily needed). If not provided, k is chosen by spectral eigengap.
+#' @param k_max Maximal number of clusters to form (not necessarily needed). If not provided, k_max is set to the number of nodes.
 #' @param elements The representative elements of the clusters (not necessary needed). If not provided, index are chosen using the betweeness centrality score.
 #' @param pen The penalty (to be chosen among "lasso" or "thresholdedLS").
 #' @param stab TRUE/FALSE indicated whether the indices should be stabilized (TRUE by default)
@@ -38,9 +39,10 @@
 #'  \donttest{results2 <- l1_spectralclustering(A = ToyData$A_hat, pen = "lasso",
 #'              k=2, elements = c(1,4))}
 
-l1_spectralclustering <- function(A, k = NULL, elements = NULL, pen, stab = TRUE){
+l1_spectralclustering <- function(A, k = NULL, k_max = NULL, elements = NULL, pen, stab = TRUE){
   # A: the matrix we aim at clustering (adjacency matrix, e.g. from CreateDataSet())
   # k: true number of clusters (not necessary needed). If not precised, k is chosen by spectral eigengap
+  # k_max: maximal number of clusters (should be smaller than the number of nodes)
   # elements: representative elements of the clusters (not necessary needed). If not precised, index are chosen using the betweeness centrality score.
   # pen: penalty (to be chosen among "lasso" or "thresholdedLS")
   # stab: TRUE/FALSE, should the indices be stabilized?
@@ -55,7 +57,7 @@ l1_spectralclustering <- function(A, k = NULL, elements = NULL, pen, stab = TRUE
   Structure <- FindStructure(A)
 
   # 2nd step: finding the optimal number of clusters (only if k is not provided)
-  clusters <- FindNbrClusters(A, structure  = Structure, k = k)
+  clusters <- FindNbrClusters(A, structure  = Structure, k = k, k_max = k_max)
 
   # 3rd step: finding the representative elements of the clusters
   Elements <- FindElement(A = A, structure = Structure, clusters = clusters, elements = elements)
